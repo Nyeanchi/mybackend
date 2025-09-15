@@ -48,19 +48,9 @@ class PropertyPolicy
      * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function create(User $user, Property $property)
+    public function create(User $user)
     {
-        //return $user->role === 'landlord' || $user->role === 'admin';
-        if ($user->role === 'admin') {
-            return true; // Admins can view all properties
-        }
-        if ($user->role === 'landlord' && $property->landlord_id === $user->id) {
-            return true; // Landlords can view their own properties
-        }
-        if ($user->role === 'tenant' && $property->tenants()->where('id', $user->id)->exists()) {
-            return true; // Tenants can view their assigned properties
-        }
-        return false;
+        return $user->role === 'landlord' || $user->role === 'admin';
     }
 
     /**
@@ -154,10 +144,10 @@ class PropertyPolicy
 //      *
 //      * @param  \App\Models\User  $user
 //      * @return \Illuminate\Auth\Access\Response|bool
-//      * 
+//      *
 //      */
 
-    
+
 //     public function create(User $user)
 //     {
 //         return $user->role === 'landlord';
