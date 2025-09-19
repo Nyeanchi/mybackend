@@ -46,8 +46,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Notification sending route (email/SMS)
     Route::post('notifications/send', [NotificationController::class, 'sendNotification']);
-    Route::post('/send-email', [EmailController::class, 'sendEmail']);  // Add this line
-
     // Auth routes || all good here
     Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);

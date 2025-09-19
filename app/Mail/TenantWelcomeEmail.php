@@ -22,11 +22,8 @@ class TenantWelcomeEmail extends Mailable
     public function build()
     {
         return $this->from(config('mail.from.address'), config('mail.from.name'))
-            ->subject('Welcome to Domotena, ' . $this->user->first_name . '!')
-            ->view('emails.welcome')
-            ->with([
-                'user' => $this->user,
-                'password' => $this->password,
-            ]);
+            ->subject('Welcome to Domotena as a Tenant, ' . $this->user->first_name . '!')
+            ->view('emails.tenant_welcome')
+            ->with(['user' => $this->user, 'password' => $this->password]);
     }
 }

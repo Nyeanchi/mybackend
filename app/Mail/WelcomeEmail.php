@@ -11,12 +11,10 @@ class WelcomeEmail extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
-    public $password;
 
-    public function __construct($user, $password = null)
+    public function __construct($user)
     {
         $this->user = $user;
-        $this->password = $password;
     }
 
     public function build()
@@ -24,13 +22,9 @@ class WelcomeEmail extends Mailable
         return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject('Welcome to Domotena, ' . $this->user->first_name . '!')
             ->view('emails.welcome')
-            ->with([
-                'user' => $this->user,
-                'password' => $this->password,
-            ]);
+            ->with(['user' => $this->user]);
     }
 }
-
 
 
 

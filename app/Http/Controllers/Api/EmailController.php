@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\WelcomeEmail;
+use App\Mail\TenantWelcomeEmail;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
@@ -36,8 +37,12 @@ class EmailController extends Controller
         }
 
         try {
-            $password = $request->event_type === 'tenant_registration' ? ($request->password ?? Str::random(12)) : null;
-            Mail::to($user->email)->send(new WelcomeEmail($user, $password));
+            if ($request->event_type === 'registration') {
+                Mail::to($user->email)->send(new WelcomeEmail($user));
+            } elseif ($request->event_type === 'tenant_registration') {
+                $password = $request->password ?? Str::random(12); // Use provided or generate temporary
+                Mail::to($user->email)->send(new TenantWelcomeEmail($user, $password));
+            }
 
             // Store notification in database
             Notification::create([
@@ -50,14 +55,14 @@ class EmailController extends Controller
                 'data' => json_encode([
                     'event' => $request->event_type,
                     'channel' => 'email',
-                    'password' => $password,
+                    'password' => $password ?? null, // Store temporarily if needed
                 ]),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Email sent successfully',
-                'password' => $password,
+                'password' => $password ?? null, // Return generated password if not provided
             ], 200);
         } catch (\Exception $e) {
             \Log::error('Failed to send email: ' . $e->getMessage());
