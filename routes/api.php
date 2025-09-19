@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LocationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PaymentMethodController;
+use App\Http\Controllers\Api\EmailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,13 @@ Route::prefix('locations')->group(function () {
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Email notification route
+    // Route::post('send-email', [EmailController::class, 'sendEmail']);
+
+    // Notification sending route (email/SMS)
+    Route::post('notifications/send', [NotificationController::class, 'sendNotification']);
+    Route::post('/send-email', [EmailController::class, 'sendEmail']);  // Add this line
 
     // Auth routes || all good here
     Route::prefix('auth')->group(function () {
@@ -84,6 +92,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('overdue/list', [PaymentController::class, 'overdue']);
         Route::get('statistics/summary', [PaymentController::class, 'statistics']);
         Route::post('{payment}/mark-paid', [PaymentController::class, 'markAsPaid']);
+        Route::get('{paymentId}/receipt/pdf', [PaymentController::class, 'downloadReceipt']);
+
+        // exports
+        Route::get('export/pdf', [PaymentController::class, 'exportPdf'])->middleware('auth:sanctum');
+        Route::get('export/csv', [PaymentController::class, 'exportCsv']);
     });
 
     // Maintenance request routes ||working perfectly i dont know about assign, complete

@@ -20,10 +20,19 @@ class PropertyController extends Controller
     {
         $query = Property::query()->with(['landlord', 'city.region', 'tenants']);
 
-        // Filter by landlord if user is a landlord
-        if ($request->user()->isLandlord()) {
-            $query->where('landlord_id', $request->user()->id);
+        $user = $request->user();
+
+        // Role-based filtering
+        if ($user->role === 'landlord') {
+            // Landlord: only their own properties
+            $query->where('landlord_id', $user->id);
+        } elseif ($user->role === 'tenant') {
+            // Tenant: only properties they are assigned to
+            $query->whereHas('tenants', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
         }
+        // Admin: no filter → sees everything
 
         // Filter by city
         if ($request->has('city_id')) {
@@ -48,10 +57,10 @@ class PropertyController extends Controller
         // Search
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('address', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('address', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -60,6 +69,7 @@ class PropertyController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
+        // Pagination
         $properties = $query->paginate($request->get('per_page', 15));
 
         return response()->json([
@@ -73,6 +83,7 @@ class PropertyController extends Controller
             ]
         ]);
     }
+
 
     public function store(StorePropertyRequest $request)
     {
@@ -100,10 +111,10 @@ class PropertyController extends Controller
                 'landlord',
                 'city.region',
                 'tenants.user',
-                'payments' => function($query) {
+                'payments' => function ($query) {
                     $query->latest()->take(10);
                 },
-                'maintenanceRequests' => function($query) {
+                'maintenanceRequests' => function ($query) {
                     $query->latest()->take(10);
                 }
             ]))
@@ -196,8 +207,6 @@ class PropertyController extends Controller
 
 
 
-
-
 // namespace App\Http\Controllers\Api;
 
 // use App\Http\Controllers\Controller;
@@ -214,7 +223,7 @@ class PropertyController extends Controller
 //         $this->middleware('auth:sanctum');
 //     }
 
-//     public function index(Request $request)
+//     public function index(Request $request,)
 //     {
 //         $query = Property::query()->with(['landlord', 'city.region', 'tenants']);
 
@@ -222,6 +231,12 @@ class PropertyController extends Controller
 //         if ($request->user()->isLandlord()) {
 //             $query->where('landlord_id', $request->user()->id);
 //         }
+
+//         // // Filter by tenant if user is a tenant
+//         // if ($user->isTenant()) {
+//         //     $query->where('user_id', $user->id);
+//         // }
+
 
 //         // Filter by city
 //         if ($request->has('city_id')) {
@@ -246,10 +261,10 @@ class PropertyController extends Controller
 //         // Search
 //         if ($request->has('search')) {
 //             $search = $request->search;
-//             $query->where(function($q) use ($search) {
+//             $query->where(function ($q) use ($search) {
 //                 $q->where('name', 'like', "%{$search}%")
-//                   ->orWhere('address', 'like', "%{$search}%")
-//                   ->orWhere('description', 'like', "%{$search}%");
+//                     ->orWhere('address', 'like', "%{$search}%")
+//                     ->orWhere('description', 'like', "%{$search}%");
 //             });
 //         }
 
@@ -298,10 +313,10 @@ class PropertyController extends Controller
 //                 'landlord',
 //                 'city.region',
 //                 'tenants.user',
-//                 'payments' => function($query) {
+//                 'payments' => function ($query) {
 //                     $query->latest()->take(10);
 //                 },
-//                 'maintenanceRequests' => function($query) {
+//                 'maintenanceRequests' => function ($query) {
 //                     $query->latest()->take(10);
 //                 }
 //             ]))

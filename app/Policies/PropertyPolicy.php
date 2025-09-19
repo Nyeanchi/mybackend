@@ -12,41 +12,39 @@ class PropertyPolicy
 
     /**
      * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
      */
     public function viewAny(User $user)
     {
-        return true; // Allow all authenticated users to list properties (filtered by controller)
+        return true; // all authenticated users can see lists (controller handles filtering)
     }
 
     /**
      * Determine whether the user can view the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Property  $property
-     * @return \Illuminate\Auth\Access\Response|bool
      */
     public function view(User $user, Property $property)
     {
+        // Admins can view everything
         if ($user->role === 'admin') {
-            return true; // Admins can view all properties
+            return true;
         }
+
+        // Landlords can only view their own properties
         if ($user->role === 'landlord' && $property->landlord_id === $user->id) {
-            return true; // Landlords can view their own properties
+            return true;
         }
-        if ($user->role === 'tenant' && $property->tenants()->where('id', $user->id)->exists()) {
-            return true; // Tenants can view their assigned properties
+
+        // Tenants can only view properties where they are assigned
+        if ($user->role === 'tenant') {
+            return $property->tenants()
+                ->where('user_id', $user->id)
+                ->exists();
         }
+
         return false;
     }
 
     /**
      * Determine whether the user can create models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
      */
     public function create(User $user)
     {
@@ -55,52 +53,41 @@ class PropertyPolicy
 
     /**
      * Determine whether the user can update the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Property  $property
-     * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, Property $property)
     {
-        return $user->role === 'landlord' && $property->landlord_id === $user->id || $user->role === 'admin';
+        return ($user->role === 'landlord' && $property->landlord_id === $user->id)
+            || $user->role === 'admin';
     }
 
     /**
      * Determine whether the user can delete the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Property  $property
-     * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, Property $property)
     {
-        return $user->role === 'landlord' && $property->landlord_id === $user->id || $user->role === 'admin';
+        return ($user->role === 'landlord' && $property->landlord_id === $user->id)
+            || $user->role === 'admin';
     }
 
     /**
      * Determine whether the user can restore the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Property  $property
-     * @return \Illuminate\Auth\Access\Response|bool
      */
     public function restore(User $user, Property $property)
     {
-        return $user->role === 'landlord' && $property->landlord_id === $user->id || $user->role === 'admin';
+        return ($user->role === 'landlord' && $property->landlord_id === $user->id)
+            || $user->role === 'admin';
     }
 
     /**
      * Determine whether the user can permanently delete the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Property  $property
-     * @return \Illuminate\Auth\Access\Response|bool
      */
     public function forceDelete(User $user, Property $property)
     {
-        return $user->role === 'landlord' && $property->landlord_id === $user->id || $user->role === 'admin';
+        return ($user->role === 'landlord' && $property->landlord_id === $user->id)
+            || $user->role === 'admin';
     }
 }
+
 
 
 

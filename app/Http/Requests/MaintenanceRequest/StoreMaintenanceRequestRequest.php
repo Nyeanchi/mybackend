@@ -13,9 +13,9 @@ class StoreMaintenanceRequestRequest extends FormRequest
     public function authorize(): bool
     {
         // Allow tenants to create maintenance requests for themselves
-        // Allow admins to create maintenance requests for any tenant
+        // Allow landlord to create maintenance requests for any tenant
         $user = $this->user();
-        return $user->role === 'admin' || $user->role === 'tenant';
+        return $user->role === 'tenant' || $user->role === 'tenant';
     }
 
     /**
@@ -29,7 +29,7 @@ class StoreMaintenanceRequestRequest extends FormRequest
             'description' => ['required', 'string'],
             'category' => ['required', Rule::in(['plumbing', 'electrical', 'structural', 'appliance', 'other'])],
             'priority' => ['required', Rule::in(['low', 'medium', 'high', 'urgent'])],
-            'tenant_id' => ['nullable', 'exists:users,id', Rule::requiredIf($this->user()->role === 'admin')],
+            'tenant_id' => ['nullable', 'exists:users,id', Rule::requiredIf($this->user()->role === 'tenant')],
             'images' => ['nullable', 'array'],
             'images.*' => ['string'], // Assuming images are stored as file paths or URLs
         ];

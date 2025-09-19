@@ -16,7 +16,7 @@ class StorePropertyRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'type' => ['required', Rule::in(['apartment', 'house', 'studio', 'commercial','villa', 'office', 'others'])],
+            'type' => ['required', Rule::in(['apartment', 'house', 'studio', 'commercial', 'villa', 'office', 'others'])],
             'address' => 'required|string|max:500',
             'city_id' => 'required|exists:cities,id',
             'landlord_id' => 'sometimes|exists:users,id',
